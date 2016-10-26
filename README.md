@@ -99,12 +99,14 @@ fs.readdir(process.argv[2], function(err, list) {
 ##  Making modules
 
 For exporting a function, assign 'module.exports' that function.
+
 `module.exports = myFunkyFunction;`
 
 For importing a module, use 'require' method to load it into a variable.
+
 `var myFunkyFunctionModule = require(./myFunkyFunction)`
 
-Previous program that displays file names with desired ext in a directory using modules :
+Program that displays file names with desired ext in a directory using modules :
 
 myModule.js
 ``` js
