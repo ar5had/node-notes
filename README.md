@@ -68,3 +68,69 @@ Program to read file in async way when second argument on command-line is file-p
     console.log(lines)  
   })  
 ```
+
+## Reading directories asynchronously
+
+`fs.readdir('path', callback)`
+readdir can be used to read files inside any directory. First arg to this method is path and other is callback similar to readFile method which have two params, first one holds error (if any in case of failure while reading) and other is an array of file names that this directory contains.
+
+Path module is very useful for handling and transforming file paths.
+
+`path.extname(p)`
+
+Return the extension of the path, from the last '.' to end of string in the last portion of the path. If there is no '.' in the last portion of the path or the first character of it is '.', then it returns an empty string.
+
+Program to display all the files having extension that user gives as second arg:
+
+``` js
+var fs = require("fs");
+var path = require("path");
+fs.readdir(process.argv[2], function(err, list) {
+    if (err) throw new Error(err);
+    list.forEach(function(name) {
+        // We can use path module here as well to get extension out of filenames
+        // if ( path.extname(name) === ("." + process.argv[3]) )
+        if(name.split(".")[1] === process.argv[3])
+            console.log(name);
+    });
+});
+```
+
+##  Making modules
+
+For exporting a function, assign 'module.exports' that function.
+`module.exports = myFunkyFunction;`
+
+For importing a module, use 'require' method to load it into a variable.
+`var myFunkyFunctionModule = require(./myFunkyFunction)`
+
+Previous program that displays file names with desired ext in a directory using modules :
+
+myModule.js
+``` js
+function getNames(dir, ext, callback) {
+    var fs = require("fs");
+    var res = [];
+    fs.readdir(dir, function(err, list) {
+        if (err) return callback(err);
+
+        list.forEach(function(name) {
+            if(name.split(".")[1] === ext) res.push(name);
+
+        });
+        callback(null, res);
+    });
+    // if callback(null, res); is called here then this module doesn't work.
+    // Figure out why ??
+}
+module.exports = getNames;
+```
+
+displayFilesInDir.js
+``` js
+var myMod = require("./myModules");
+myMod(process.argv[2], process.argv[3], function(err, names) {
+    if(err) throw new Error(err);
+    names.forEach(function(name){console.log(name)});
+});
+```
