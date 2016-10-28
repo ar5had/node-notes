@@ -207,7 +207,7 @@ function pipe(in, out) {
 
 This is an example code but what pipe does is essentially this: Instead of you needing to write event listeners on the input and passing the data to the output you can use the method pipe for your convenience.
 
-**NOTE: DO PIPING BEFORE HANDLING EVENTS, DONT WORRY ABOUT ERRORS TO GET PIPED AS WHILE PIPING ERROR CAN BE HANDLED**
+**NOTE: Do piping before handling events, dont worry about errors to get piped as while piping error can be handled**
 
 ## Collecting all the data from a GET request
 
@@ -294,9 +294,11 @@ fired with the data:
 Note that you will probably need to data.toString() to convert from a
 Buffer.
 
-**QUICK NOTES**
-  1.In case of concatStream we dont have "error" argument in callback so error might be handled by res.on("error", ...)
-  2.In case of bl we have used toString even when we have setEncoding for response stream because 'bl(callback)' creates 
+**NOTE:**
+
+  * In case of concatStream we dont have "error" argument in callback so error might be handled by res.on("error", ...)
+
+  * In case of bl we have used toString even when we have setEncoding for response stream because 'bl(callback)' creates 
   another stream whose encoding is not set so a way to do so is :
   ```js
   var http = require('http');
