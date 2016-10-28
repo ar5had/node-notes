@@ -299,6 +299,45 @@ Buffer.
   * In case of concatStream we dont have "error" argument in callback so error might be handled by res.on("error", ...)
 
   * In case of bl we have used toString even when we have setEncoding for response stream because bl doesnt have a setEncoding method.
+  
+## Making multiple GET requests in order
+Don't expect servers to play nicely! They are not going to  
+give you complete responses in the order you hope. 
+
+Counting callbacks is one of the fundamental ways of managing async in  
+Node. Rather than doing it yourself, you may find it more convenient to  
+rely on a third-party library such as [async](http://npm.im/async) or  
+[after](http://npm.im/after). 
+
+Program for multiple request and printing in order:
+
+```js
+var http = require("http");
+
+function multipleGet(start, end) {
+    if (start === end) return;
+    http.get(process.argv[start], function(res) {
+        res.setEncoding('utf8');
+        res.on("error", console.error);
+        var data = "";
+        res.on("data", function(newData) {
+            data += newData;
+        });
+        res.on("end", function() {
+            console.log(data);
+           multipleGet(++start, end); 
+        });
+    }).on("error", console.error);
+    
+}
+
+multipleGet(2, process.argv.length, "");
+```
+
+**NOTE:** Dont put async function in console.log because async function will take time but console.log will get executed
+instantly so better put it in callback. For error catching use promises.
+
+##
 
 
 
