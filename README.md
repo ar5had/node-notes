@@ -1,5 +1,5 @@
 # node-notes
-Reading this along with learnyounode exercises will benifit the most
+Reading this along with doing learnyounode exercises will benifit you the most
 
 ## To start a program using node-notes
 node \<program_name>
@@ -298,22 +298,8 @@ Buffer.
 
   * In case of concatStream we dont have "error" argument in callback so error might be handled by res.on("error", ...)
 
-  * In case of bl we have used toString even when we have setEncoding for response stream because 'bl(callback)' creates 
-  another stream whose encoding is not set so a way to do so is :
-  ```js
-  var http = require('http');
-  var bl = require("bl");
-  http.get(process.argv[2], function(res) {
-      var bufList = bl(function(err, data) {
-          if (err) console.log(err);
-          console.log(data.length);
-          console.log(data);
-      });
-      bufList.setEncoding("utf8");
-      res.pipe(bufList);
-      res.on("error", console.error);
-  }).on("error", console.error);
-  ```
+  * In case of bl we have used toString even when we have setEncoding for response stream because bl doesnt have a setEncoding method.
+
 
 
 
