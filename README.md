@@ -300,7 +300,7 @@ Buffer.
 
   * In case of bl we have used toString even when we have setEncoding for response stream because bl doesnt have a setEncoding method.
   
-## Making multiple GET requests in order
+## Making multiple GET requests in an predefined order
 Don't expect servers to play nicely! They are not going to  
 give you complete responses in the order you hope. 
 
@@ -339,7 +339,7 @@ instantly so better put it in callback. For error catching use promises.
 
 ## TCP time server
 
-Here's no HTTP involved here so we need to use the net module from Node core which has
+No HTTP involved here so we need to use the net module from Node core which has
 all the basic networking functions.
 
 The net module has a method named net.createServer() that takes a
@@ -385,10 +385,58 @@ var server = net.createServer(function(socket) {
 }).on("error", console.error);
 server.listen(process.argv[2]);
 ```
+## Creating a http server for file stream
 
+``` js
+var http = require("http");
+var fs = require("fs");
+var server = http.createServer(function(req, res) {
+    var src = fs.createReadStream(process.argv[3]);
+    src.pipe(res);
+    src.on("error", console.error);
+});
 
+server.listen(Number(process.argv[2]));
+```
 
+## Handling POST request and modifying POST request data
 
+While we're not restricted to using the streaming capabilities of the  
+request and response objects, it will be much easier if you do.  
+
+There are a number of different packages in npm that you can use to  
+"transform" stream data as it's passing through. For this exercise the  
+through2-map package offers the simplest API.  
+
+through2-map allows you to create a transform stream using only a single  
+function that takes a chunk of data and returns a chunk of data. It's  
+designed to work much like Array#map() but for streams:  
+
+```js
+   var map = require('through2-map')  
+   inStream.pipe(map(function (chunk) {  
+     return chunk.toString().split('').reverse().join('')  
+   })).pipe(outStream)  
+```
+
+In the above example, the incoming data from inStream is converted to a  
+String (if it isn't already), the characters are reversed and the result  
+is passed through to outStream. So we've made a chunk character reverser!  
+Remember though that the chunk size is determined up-stream and you have  
+little control over it for incoming data.  
+
+``` js
+var http = require("http");
+var map = require("through2-map");
+var server = http.createServer(function(req, res){
+   if(req.method === "POST") 
+       req.pipe(map(function(chunk){return chunk.toString().toUpperCase();})).pipe(res);
+   
+}).on("error", console.error);
+server.listen(process.argv[2]);
+```
+
+## 
 
 
 
