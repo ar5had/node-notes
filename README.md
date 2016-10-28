@@ -2,7 +2,7 @@
 Reading this along with learnyounode exercises will benifit the most
 
 ## To start a program using node-notes
-node <program_name>
+node \<program_name>
 
 ## Input via command-line in node-notes
 Node uses 'process' object to get input as arguments. 'process.argv' hold all the arguments given via command-line.
@@ -207,7 +207,7 @@ function pipe(in, out) {
 
 This is an example code but what pipe does is essentially this: Instead of you needing to write event listeners on the input and passing the data to the output you can use the method pipe for your convenience.
 
-NOTE: DO PIPING BEFORE HANDLING EVENTS, DONT WORRY ABOUT ERRORS TO GET PIPED AS IN PIPING ERROR CAN BE HANDLED.
+**NOTE: DO PIPING BEFORE HANDLING EVENTS, DONT WORRY ABOUT ERRORS TO GET PIPED AS WHILE PIPING ERROR CAN BE HANDLED**
 
 ## Collecting all the data from a GET request
 
@@ -255,15 +255,63 @@ http.get(process.argv[2], function(res) {
 Using bl package:
 
 ```js
+var http = require('http');
+var bl = require("bl");
+http.get(process.argv[2], function(res) {
+    res.setEncoding('utf8');
+    res.pipe(bl(function(err, data) {
+        if (err) console.log(err);
+        console.log(data.length);
+        console.log(data.toString());
+    }));
+    res.on("error", console.error);
+}).on("error", console.error);
 ```
 
 Using concatStream package: 
 
 ```js
+var http = require('http');
+var cs = require("concat-stream");
+http.get(process.argv[2], function(res) {
+    res.setEncoding('utf8');
+    res.pipe(cs(function(data) {
+        console.log(data.length);
+        console.log(data);
+    }));
+    res.on("error", console.error);
+}).on("error", console.error);
 ```
 
+Both bl and concat-stream can have a stream piped in to them and they will
+collect the data for you. Once the stream has ended, a callback will be
+fired with the data:
 
+   response.pipe(bl(function (err, data) { /* ... */ }))
+   // or
+   response.pipe(concatStream(function (data) { /* ... */ }))
 
+Note that you will probably need to data.toString() to convert from a
+Buffer.
+
+**QUICK NOTES**
+  1.In case of concatStream we dont have "error" argument in callback so error might be handled by res.on("error", ...)
+  2.In case of bl we have used toString even when we have setEncoding for response stream because 'bl(callback)' creates 
+  another stream whose encoding is not set so a way to do so is :
+  ```js
+  var http = require('http');
+  var bl = require("bl");
+  http.get(process.argv[2], function(res) {
+      var bufList = bl(function(err, data) {
+          if (err) console.log(err);
+          console.log(data.length);
+          console.log(data);
+      });
+      bufList.setEncoding("utf8");
+      res.pipe(bufList);
+      res.on("error", console.error);
+  }).on("error", console.error);
+  ```
 
 
 
