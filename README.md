@@ -337,11 +337,54 @@ multipleGet(2, process.argv.length, "");
 **NOTE:** Dont put async function in console.log because async function will take time but console.log will get executed
 instantly so better put it in callback. For error catching use promises.
 
-##
+## TCP time server
+
+Here's no HTTP involved here so we need to use the net module from Node core which has
+all the basic networking functions.
+
+The net module has a method named net.createServer() that takes a
+function. The function that you need to pass to net.createServer() is a
+connection listener that is called more than once. Every connection
+received by your server triggers another call to the listener. The
+listener function has the signature:
+
+   `function listener(socket) { /* ... */ }`
+
+net.createServer() also returns an instance of your server. You must call
+server.listen(portNumber) to start listening on a particular port.
+
+A typical Node TCP server looks like this:
+```js
+   var net = require('net')
+   var server = net.createServer(function (socket) {
+     // socket handling logic
+   })
+   server.listen(8000)
+```
+Remember to use the port number supplied to you as the first command-line
+argument.
+
+The socket object contains a lot of meta-data regarding the connection,
+but it is also a Node duplex Stream, in that it can be both read from, and
+written to.
+
+Use socket.write(data) to write data to the socket and socket.end() to
+close the socket. Alternatively, the .end() method also takes a data  
+object so you can simplify to just: socket.end(data). 
 
 
+Program for making tcp time server using net module:
 
-
+``` js
+var net = require("net");
+var date = require("date-and-time");
+var server = net.createServer(function(socket) {
+    var now = new Date();
+    var data = date.format(now, 'YYYY/MM/DD HH:mm:ss').replace(/\//g, "-").slice(0,-3); 
+    socket.end(data+"\n");
+}).on("error", console.error);
+server.listen(process.argv[2]);
+```
 
 
 
