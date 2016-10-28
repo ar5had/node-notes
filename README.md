@@ -1,4 +1,5 @@
 # node-notes
+Reading this along with learnyounode exercises will benifit the most
 
 ## To start a program using node-notes
 node <program_name>
@@ -164,17 +165,102 @@ which you have to explicitly convert to Strings.
 
 Program to print result obtained from a GET request:
 
-``` js
+```js
  var http = require('http')  
        
-     http.get(process.argv[2], function (response) {  
-       response.setEncoding('utf8')  
-       response.on('data', console.log)  
-       response.on('error', console.error)  
-     }).on('error', console.error)  
+ http.get(process.argv[2], function (response) {  
+   response.setEncoding('utf8')  
+   response.on('data', console.log)  
+   response.on('error', console.error)  
+ }).on('error', console.error)  
 ```
 
+## Piping in streams
 
+Piping is a great mechanism in which you can read data from the source and write to destination without managing the flow yourself. Take a look at the following snippet:
+
+```js
+var fs = require('fs');
+var readableStream = fs.createReadStream('file1.txt');
+var writableStream = fs.createWriteStream('file2.txt');
+```
+
+`readableStream.pipe(writableStream);`
+
+The above snippet makes use of the pipe() function to write the content of file1 to file2. As pipe() manages the data flow for you, you should not worry about slow or fast data flow. This makes pipe() a neat tool to read and write data. You should also note that pipe() returns the destination stream. So, you can easily utilize this to chain multiple streams together. 
+
+Imagine there was no .pipe command. You would need to do piping like this:
+
+```js
+function pipe(in, out) {
+  in.on("error", function(error) {
+    out.emit("error", error);
+  });
+  in.on("data", function(data) {
+   out.write(data);
+  });
+  in.on("end", function() {
+     out.emit("end");
+  });
+}
+```
+
+This is an example code but what pipe does is essentially this: Instead of you needing to write event listeners on the input and passing the data to the output you can use the method pipe for your convenience.
+
+NOTE: DO PIPING BEFORE HANDLING EVENTS, DONT WORRY ABOUT ERRORS TO GET PIPED AS IN PIPING ERROR CAN BE HANDLED.
+
+## Collecting all the data from a GET request
+
+Http.get DOES finish execution (by creating the stream) before the callback is called. It is the stream that is still being processed in the callback. The end result of http.get is the stream object that is still updating until the complete response is received.
+
+The way to think about callbacks is not as a function that executes when the parent is done executing, but as a function that is an argument of another function. Theoretically, there is nothing to stop the parent from executing the callback at any time in its execution cycle. The convention in node.js just happens to be that callbacks get executed after the parent is done.
+
+Function callback is passed as a parameter into function http.get and so it can have access to the response object created during the execution of http.get. However, what is also happening is that the response is a stream, meaning that it is continually updated until it is complete.
+
+Here is the order of operation
+
+1- http.get calls the external resource.
+
+2- http.get creates the response object as a stream and updates it as the data comes in from the external resource
+
+3- Upon each update of the response object, it emits a "data" event.
+
+4- function callback contains a listener (response.on) that is activated whenever the "data" event is thrown.
+
+Program that performs an HTTP GET request to a URL provided to you  
+as the first command-line argument. Collect all data from the server (not  
+just the first "data" event) and then write two lines to the console  
+(stdout).  
+
+The first line you write should just be an integer representing the number  
+of characters received from the server. The second line should contain the  
+complete String of characters sent by the server.
+
+Without third-party packages:
+
+```js
+var http = require('http');
+http.get(process.argv[2], function(res) {
+    res.setEncoding('utf8');
+    var lines = "";
+    res.on("error", console.error);
+    res.on("data", function(data){lines = lines.concat(data)});
+    res.on("end", function(){ 
+        console.log(lines.length);
+        console.log(lines);
+    });
+}).on("error", console.error);
+```
+
+Using bl package:
+
+```js
+```
+
+Using concatStream package: 
+
+```js
+```
 
 
 
