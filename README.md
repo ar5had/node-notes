@@ -533,3 +533,8 @@ var server = http.createServer(function(req, res){
 }).on("error", console.error);
 server.listen(process.argv[2]);
 ```
+
+**NOTE:** 
+  * response.send() === response.write(...) and response.end();
+  * response.write can be called many times but end is called only one time
+
