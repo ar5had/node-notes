@@ -425,6 +425,8 @@ is passed through to outStream. So we've made a chunk character reverser!
 Remember though that the chunk size is determined up-stream and you have  
 little control over it for incoming data.  
 
+Program that creates a HTTP server that receives only POST requests and converts incoming POST body characters to upper-case and returns it to the client:
+
 ``` js
 var http = require("http");
 var map = require("through2-map");
@@ -436,20 +438,98 @@ var server = http.createServer(function(req, res){
 server.listen(process.argv[2]);
 ```
 
-## 
+Without using through2-map module:
+
+``` js
+var http = require("http");
+var str = "";
+var server = http.createServer(function(req, res){
+   if(req.method === "POST") {
+       req.on('data',(function(data){str += data.toString(); }));
+   
+       req.on('end', function(){res.write(str.toUpperCase());});
+   }
+}).on("error", console.error);
+server.listen(process.argv[2]);
+```
+
+## Handling JSON api using http server
+
+The request object from an HTTP server has a url property that you will
+need to use to "route" your requests for the two endpoints.
+
+You can parse the URL and query string using the Node core 'url' module.
+url.parse(request.url, true) will parse content of request.url and provide
+you with an object with helpful properties.
+
+For example, on the command prompt, type:
+
+`   $ node -pe "require('url').parse('/test?q=1', true)"`
+
+Your response should be in a JSON string format. Look at JSON.stringify()
+for more information.
+
+You should also be a good web citizen and set the Content-Type properly:
+
+`   res.writeHead(200, { 'Content-Type': 'application/json' })`
+
+The JavaScript Date object can print dates in ISO format, e.g. new
+Date().toISOString(). It can also parse this format if you pass the string
+into the Date constructor. Date#getTime() will also come in handy.
 
 
+Program that creates a HTTP server that serves JSON data when it receives a GET request
+to the path '/api/parsetime'. Expect the request to contain a query string
+with a key 'iso' and an ISO-format time as the value.
 
+For example:
 
+/api/parsetime?iso=2013-08-10T12:10:15.474Z
 
+The JSON response should contain only 'hour', 'minute' and 'second'
+properties. For example:
 
+```js
+   {
+     "hour": 14,
+     "minute": 23,
+     "second": 15
+   }
+```
 
+Add second endpoint for the path '/api/unixtime' which accepts the same
+query string but returns UNIX epoch time in milliseconds (the number of
+milliseconds since 1 Jan 1970 00:00:00 UTC) under the property 'unixtime'.
+For example:
 
+```js
+   { "unixtime": 1376136615474 }
+```
 
+Server should listen on the port provided by the first argument to program.
 
+Code:
 
-
-
-
-
-
+```js
+var http = require("http");
+var url = require("url");
+var server = http.createServer(function(req, res){
+   var urlProps = url.parse(req.url, true);
+   var date = new Date(urlProps.query.iso), json = {};
+   if(urlProps.pathname === "/api/unixtime") {
+        res.writeHead(200, {'Content-Type': 'application/json'}); 
+        json = {"unixtime": date.getTime()};  
+        res.end(JSON.stringify(json));
+   }
+   else if (urlProps.pathname === "/api/parsetime") {
+        res.writeHead(200, {'Content-Type': 'application/json'}); 
+        json = {"hour": date.getHours(), "minute": date.getMinutes(), "second": date.getSeconds()};
+        res.end(JSON.stringify(json));
+   }
+   else{
+      res.writeHead(404);
+      res.end();
+  }
+}).on("error", console.error);
+server.listen(process.argv[2]);
+```
