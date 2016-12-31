@@ -5,7 +5,7 @@ Reading this along with doing learnyounode exercises will benifit you the most
 In normal js, we can't add `-` or `dash` between words of a variable name so we use camel case etc. But in node js, the naming system of module follows a convention to add `-` or `dash` between words e.g., `var LiveServer = require('gulp-live-server');`. 
 
 ## To start a program using node-notes
-node \<program_name>
+`node <program_name>`
 
 ## Input via command-line in node-notes
 Node uses 'process' object to get input as arguments. 'process.argv' hold all the arguments given via command-line.
